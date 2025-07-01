@@ -1,8 +1,8 @@
-import QtQuick 2.0
+import QtQuick
 
 ListModel {
 	id: serversModel
-	
+
 	ListElement {
 		name: "Example"
 		hostname: "example.com"

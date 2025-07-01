@@ -1,151 +1,154 @@
-import QtQuick 2.1
-import QtQuick.Controls 1.2
-import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.1
-import org.kde.plasma.components 2.0 as PlasmaComponents
+import QtQuick
+import QtQuick.Controls as QQC2
+import QtQuick.Dialogs
+import QtQuick.Layouts
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.kcmutils as KCM
+import org.kde.kirigami as Kirigami
 
 import ".."
 
-Item {
+KCM.SimpleKCM {
 	id: configGeneral
-	Layout.fillWidth: true
-	
-	property string cfg_servers: plasmoid.configuration.servers
-	
+
+	property string cfg_servers: Plasmoid.configuration.servers
+
 	property int dialogMode: -1
-	
+
 	ServersModel {
 		id: serversModel
 	}
-	
+
 	Component.onCompleted: {
 		serversModel.clear();
-		
-		var servers = JSON.parse(cfg_servers);
-		
-		for(var i = 0; i < servers.length; i++) {
-			serversModel.append(servers[i]);
+
+		try {
+			var servers = JSON.parse(cfg_servers || '[]');
+
+			for(var i = 0; i < servers.length; i++) {
+				serversModel.append(servers[i]);
+			}
+		} catch (e) {
+			console.log("Error parsing servers configuration:", e);
 		}
 	}
 
 	RowLayout {
 		anchors.fill: parent
-		
-		Layout.alignment: Qt.AlignTop | Qt.AlignRight
-		
-		TableView {
-			id: serversTable
-			model: serversModel
-			
-			anchors.top: parent.top
-			anchors.right: buttonsColumn.left
-			anchors.bottom: parent.bottom
-			anchors.left: parent.left
-			anchors.rightMargin: 10
-			
-			TableViewColumn {
-				role: "active"
-				width: 20
-				delegate: CheckBox {
-					checked: model.active
-					onClicked: {
-						model.active = checked;
-						
-						cfg_servers = JSON.stringify(getServersArray());
+
+		QQC2.ScrollView {
+			id: serversScrollView
+			Layout.fillWidth: true
+			Layout.fillHeight: true
+			Layout.rightMargin: Kirigami.Units.smallSpacing
+
+			ListView {
+				id: serversList
+				model: serversModel
+
+				delegate: QQC2.ItemDelegate {
+					width: ListView.view.width
+					height: Kirigami.Units.gridUnit * 2
+
+					RowLayout {
+						anchors.fill: parent
+						anchors.margins: Kirigami.Units.smallSpacing
+
+						QQC2.CheckBox {
+							checked: model.active
+							onToggled: {
+								model.active = checked;
+								cfg_servers = JSON.stringify(getServersArray());
+							}
+						}
+
+						QQC2.Label {
+							Layout.fillWidth: true
+							text: model.name || model.hostname
+							elide: Text.ElideRight
+						}
+					}
+
+					onDoubleClicked: {
+						editServer(index);
 					}
 				}
 			}
-			
-			TableViewColumn {
-				role: "name"
-				title: "Name"
-			}
-			
-			onDoubleClicked: {
-				editServer();
-			}
-			
-			onActivated: {
-				moveUp.enabled = row > 0;
-				moveDown.enabled = row < serversTable.model.count - 1;
-			}
 		}
-		
+
 		ColumnLayout {
 			id: buttonsColumn
-			
-			anchors.top: parent.top
-			
-			PlasmaComponents.Button {
+
+			QQC2.Button {
 				text: "Add..."
-				iconSource: "list-add"
-				
+				icon.name: "list-add"
+
 				onClicked: {
 					addServer();
 				}
 			}
-			
-			PlasmaComponents.Button {
+
+			QQC2.Button {
 				text: "Edit"
-				iconSource: "edit-entry"
-				
+				icon.name: "edit-entry"
+				enabled: serversList.currentIndex >= 0
+
 				onClicked: {
-					editServer();
+					editServer(serversList.currentIndex);
 				}
 			}
-			
-			PlasmaComponents.Button {
+
+			QQC2.Button {
 				text: "Remove"
-				iconSource: "list-remove"
-				
+				icon.name: "list-remove"
+				enabled: serversList.currentIndex >= 0
+
 				onClicked: {
-					if(serversTable.currentRow == -1) return;
-					
-					serversTable.model.remove(serversTable.currentRow);
-					
+					if(serversList.currentIndex == -1) return;
+
+					serversModel.remove(serversList.currentIndex);
+
 					cfg_servers = JSON.stringify(getServersArray());
 				}
 			}
-			
-			PlasmaComponents.Button {
+
+			QQC2.Button {
 				id: moveUp
 				text: i18n("Move up")
-				iconSource: "go-up"
-				enabled: false
-				
+				icon.name: "go-up"
+				enabled: serversList.currentIndex > 0
+
 				onClicked: {
-					if(serversTable.currentRow == -1) return;
-					
-					serversTable.model.move(serversTable.currentRow, serversTable.currentRow - 1, 1);
-					serversTable.selection.clear();
-					serversTable.selection.select(serversTable.currentRow - 1);
+					if(serversList.currentIndex == -1) return;
+
+					serversModel.move(serversList.currentIndex, serversList.currentIndex - 1, 1);
+					serversList.currentIndex = serversList.currentIndex - 1;
 				}
 			}
-			
-			PlasmaComponents.Button {
+
+			QQC2.Button {
 				id: moveDown
 				text: i18n("Move down")
-				iconSource: "go-down"
-				enabled: false
-				
+				icon.name: "go-down"
+				enabled: serversList.currentIndex >= 0 && serversList.currentIndex < serversModel.count - 1
+
 				onClicked: {
-					if(serversTable.currentRow == -1) return;
-					
-					serversTable.model.move(serversTable.currentRow, serversTable.currentRow + 1, 1);
-					serversTable.selection.clear();
-					serversTable.selection.select(serversTable.currentRow + 1);
+					if(serversList.currentIndex == -1) return;
+
+					serversModel.move(serversList.currentIndex, serversList.currentIndex + 1, 1);
+					serversList.currentIndex = serversList.currentIndex + 1;
 				}
 			}
 		}
 	}
-	
-	
-	Dialog {
+
+
+	QQC2.Dialog {
 		id: serverDialog
-		visible: false
 		title: "Server"
-		standardButtons: StandardButton.Save | StandardButton.Cancel
-		
+		modal: true
+		standardButtons: QQC2.Dialog.Save | QQC2.Dialog.Cancel
+
 		onAccepted: {
 			var itemObject = {
 				name: serverName.text,
@@ -157,135 +160,130 @@ Item {
 					command: serverCommand.text
 				}
 			};
-			
+
 			if(dialogMode == -1) {
 				serversModel.append(itemObject);
 			} else {
 				serversModel.set(dialogMode, itemObject);
 			}
-			
+
 			cfg_servers = JSON.stringify(getServersArray());
 		}
 
 		ColumnLayout {
-			GridLayout {
-				columns: 2
-				
-				PlasmaComponents.Label {
+			Kirigami.FormLayout {
+				QQC2.Label {
 					text: "Name:"
 				}
-				
-				TextField {
+
+				QQC2.TextField {
 					id: serverName
-					Layout.minimumWidth: theme.mSize(theme.defaultFont).width * 40
+					Layout.minimumWidth: Kirigami.Units.gridUnit * 20
 				}
-				
-				
-				PlasmaComponents.Label {
+
+				QQC2.Label {
 					text: "Host name:"
 				}
-				
-				TextField {
+
+				QQC2.TextField {
 					id: serverHostname
-					Layout.minimumWidth: theme.mSize(theme.defaultFont).width * 40
+					Layout.minimumWidth: Kirigami.Units.gridUnit * 20
 				}
-				
-				
-				PlasmaComponents.Label {
+
+				QQC2.Label {
 					text: i18n("Refresh rate:")
 				}
-				
-				SpinBox {
+
+				QQC2.SpinBox {
 					id: serverRefreshRate
-					suffix: i18n(" seconds")
-					minimumValue: 1
-					maximumValue: 3600
+					textFromValue: function(value) {
+						return value + i18n(" seconds")
+					}
+					valueFromText: function(text) {
+						return parseInt(text)
+					}
+					from: 1
+					to: 3600
 				}
-				
-				
-				PlasmaComponents.Label {
+
+				QQC2.Label {
 					text: i18n("Check method:")
 				}
-				
-				ComboBox {
+
+				QQC2.ComboBox {
 					id: serverMethod
 					model: ["Ping", "PingV6", "HTTP 200 OK", "Command"]
-					Layout.minimumWidth: theme.mSize(theme.defaultFont).width * 15
+					Layout.minimumWidth: Kirigami.Units.gridUnit * 15
 					onActivated: {
-						if(index == 3)
-							commandGroup.visible = true
-						else
-							commandGroup.visible = false
+						commandGroup.visible = (index == 3)
 					}
 				}
-				
-				
-				PlasmaComponents.Label {
-					text: ""
-				}
-				
-				CheckBox {
+
+				QQC2.CheckBox {
 					id: serverActive
 					text: i18n("Active")
 				}
 			}
-			
-			GroupBox {
+
+			QQC2.GroupBox {
 				id: commandGroup
 				title: "Command"
 				visible: false
-				
-				anchors.left: parent.left
-				anchors.right: parent.right
-					
-				TextField {
-					id: serverCommand
-					width: parent.width
-				}
-				
-				PlasmaComponents.Label {
-					anchors.top: serverCommand.bottom
-					width: parent.width
-					wrapMode: Text.WordWrap
-					text: i18n("Use %hostname% to pass server's hostname as an argument or option to the executable.")
+				Layout.fillWidth: true
+
+				ColumnLayout {
+					anchors.fill: parent
+
+					QQC2.TextField {
+						id: serverCommand
+						Layout.fillWidth: true
+					}
+
+					QQC2.Label {
+						Layout.fillWidth: true
+						wrapMode: Text.WordWrap
+						text: i18n("Use %hostname% to pass server's hostname as an argument or option to the executable.")
+					}
 				}
 			}
 		}
 	}
-	
+
 	function addServer() {
 		dialogMode = -1;
-		
+
 		serverName.text = ""
 		serverHostname.text = ""
 		serverRefreshRate.value = 60
 		serverMethod.currentIndex = 0
 		serverActive.checked = true
-		
-		serverDialog.visible = true;
-		serverName.focus = true;
+
+		serverDialog.open();
+		serverName.forceActiveFocus();
 	}
-	
-	function editServer() {
-		dialogMode = serversTable.currentRow;
-		
-		serverName.text = serversModel.get(dialogMode).name
-		serverHostname.text = serversModel.get(dialogMode).hostname
-		serverRefreshRate.value = serversModel.get(dialogMode).refreshRate
-		serverMethod.currentIndex = serversModel.get(dialogMode).method
-		serverActive.checked = serversModel.get(dialogMode).active
-		
-		serverDialog.visible = true;
-		serverName.focus = true;
+
+	function editServer(index) {
+		dialogMode = index;
+
+		var server = serversModel.get(dialogMode);
+		serverName.text = server.name || ""
+		serverHostname.text = server.hostname || ""
+		serverRefreshRate.value = server.refreshRate || 60
+		serverMethod.currentIndex = server.method || 0
+		serverActive.checked = server.active || true
+		serverCommand.text = server.extraOptions ? server.extraOptions.command || "" : ""
+
+		serverDialog.open();
+		serverName.forceActiveFocus();
 	}
-	
+
 	function getServersArray() {
 		var serversArray = [];
-		
+
 		for(var i = 0; i < serversModel.count; i++) {
 			serversArray.push(serversModel.get(i));
 		}
-		
+
 		return serversArray;
 	}
 }

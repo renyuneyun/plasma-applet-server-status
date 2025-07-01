@@ -1,128 +1,100 @@
-import QtQuick 2.1
-import QtQuick.Controls 1.2
-import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.1
-import org.kde.plasma.components 2.0 as PlasmaComponents
+import QtQuick
+import QtQuick.Controls as QQC2
+import QtQuick.Dialogs
+import QtQuick.Layouts
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.kcmutils as KCM
+import org.kde.kirigami as Kirigami
 
-Item {
+KCM.SimpleKCM {
 	id: configNotifications
-	Layout.fillWidth: true
-	
-	property string cfg_notificationUp: plasmoid.configuration.notificationUp
-	property string cfg_notificationDown: plasmoid.configuration.notificationDown
-	
+
+	property string cfg_notificationUp: Plasmoid.configuration.notificationUp
+	property string cfg_notificationDown: Plasmoid.configuration.notificationDown
+
 	Component.onCompleted: {
-		var notificationUp = JSON.parse(cfg_notificationUp);
-		
-		notifyUpAction.currentIndex = notificationUp.action;
-		notifyUpCommand.text = notificationUp.extraOptions.command;
-		
-		
-		var notificationDown = JSON.parse(cfg_notificationDown);
-		
-		notifyDownAction.currentIndex = notificationDown.action;
-		notifyDownCommand.text = notificationDown.extraOptions.command;
+		try {
+			var notificationUp = JSON.parse(cfg_notificationUp || '{"action": 0, "extraOptions": {"command": ""}}');
+
+			notifyUpAction.currentIndex = notificationUp.action || 0;
+			notifyUpCommand.text = notificationUp.extraOptions ? notificationUp.extraOptions.command : "";
+
+
+			var notificationDown = JSON.parse(cfg_notificationDown || '{"action": 0, "extraOptions": {"command": ""}}');
+
+			notifyDownAction.currentIndex = notificationDown.action || 0;
+			notifyDownCommand.text = notificationDown.extraOptions ? notificationDown.extraOptions.command : "";
+		} catch (e) {
+			console.log("Error parsing notification configuration:", e);
+		}
 	}
-	
+
 	ColumnLayout {
-		anchors.left: parent.left
-		anchors.right: parent.right
-		
-		GroupBox {
+		anchors.fill: parent
+
+		QQC2.GroupBox {
 			id: notificationUpGroup
 			title: "When server goes online"
-			visible: true
-			
-			anchors.left: parent.left
-			anchors.right: parent.right
-				
-			GridLayout {
-				columns: 2
-				
-				PlasmaComponents.Label {
+			Layout.fillWidth: true
+
+			Kirigami.FormLayout {
+				QQC2.Label {
 					text: i18n("Action:")
 				}
-				
-				ComboBox {
+
+				QQC2.ComboBox {
 					id: notifyUpAction
 					model: ["Nothing", "System notification", "Command"]
-					Layout.minimumWidth: theme.mSize(theme.defaultFont).width * 20
+					Layout.minimumWidth: Kirigami.Units.gridUnit * 20
 					onCurrentIndexChanged: {
 						updateData();
-						
-						if(currentIndex == 2) {
-							notifyUpCommandLabel.visible = true
-							notifyUpCommand.visible = true
-						} else {
-							notifyUpCommandLabel.visible = false
-							notifyUpCommand.visible = false
-						}
+
+						notifyUpCommand.visible = (currentIndex == 2)
 					}
 				}
-				
-				PlasmaComponents.Label {
-					id: notifyUpCommandLabel
-					text: i18n("Command:")
-					visible: false
-				}
-				
-				TextField {
+
+				QQC2.TextField {
 					id: notifyUpCommand
-					Layout.minimumWidth: parent.width
+					Layout.fillWidth: true
 					visible: false
-					onEditingFinished: updateData
+					placeholderText: i18n("Command:")
+					onTextChanged: updateData()
 				}
 			}
 		}
-		
-		GroupBox {
+
+		QQC2.GroupBox {
 			id: notificationDownGroup
 			title: "When server goes offline"
-			visible: true
-			
-			anchors.left: parent.left
-			anchors.right: parent.right
-				
-			GridLayout {
-				columns: 2
-				
-				PlasmaComponents.Label {
+			Layout.fillWidth: true
+
+			Kirigami.FormLayout {
+				QQC2.Label {
 					text: i18n("Action:")
 				}
-				
-				ComboBox {
+
+				QQC2.ComboBox {
 					id: notifyDownAction
 					model: ["Nothing", "System notification", "Command"]
-					Layout.minimumWidth: theme.mSize(theme.defaultFont).width * 20
+					Layout.minimumWidth: Kirigami.Units.gridUnit * 20
 					onCurrentIndexChanged: {
 						updateData();
-						
-						if(currentIndex == 2) {
-							notifyDownCommandLabel.visible = true
-							notifyDownCommand.visible = true
-						} else {
-							notifyDownCommandLabel.visible = false
-							notifyDownCommand.visible = false
-						}
+
+						notifyDownCommand.visible = (currentIndex == 2)
 					}
 				}
-				
-				PlasmaComponents.Label {
-					id: notifyDownCommandLabel
-					text: i18n("Command:")
-					visible: false
-				}
-				
-				TextField {
+
+				QQC2.TextField {
 					id: notifyDownCommand
-					Layout.minimumWidth: parent.width
+					Layout.fillWidth: true
 					visible: false
-					onEditingFinished: updateData
+					placeholderText: i18n("Command:")
+					onTextChanged: updateData()
 				}
 			}
 		}
 	}
-	
+
 	function updateData() {
 		var notificationUp = {
 			action: notifyUpAction.currentIndex,
@@ -130,17 +102,17 @@ Item {
 				command: notifyUpCommand.text
 			}
 		};
-		
+
 		cfg_notificationUp = JSON.stringify(notificationUp);
-		
-		
+
+
 		var notificationDown = {
 			action: notifyDownAction.currentIndex,
 			extraOptions: {
 				command: notifyDownCommand.text
 			}
 		};
-		
+
 		cfg_notificationDown = JSON.stringify(notificationDown);
 	}
 }

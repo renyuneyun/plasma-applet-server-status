@@ -1,0 +1,27 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "makg@makg.eu",
+                "Name": "Maciej Gierej"
+            }
+        ],
+        "Category": "Utilities",
+        "Dependencies": [
+        ],
+        "Description": "Shows status of user defined servers.",
+        "Description[en_GB]": "Shows status of user defined servers.",
+        "Description[pl]": "Pokazuje status serwerów zdefiniowanych przez użytkownika.",
+        "EnabledByDefault": true,
+        "Icon": "applications-internet",
+        "Id": "org.kde.plasma.serverstatus",
+        "License": "MIT",
+        "Name": "Server Status",
+        "Name[en_GB]": "Server Status",
+        "Name[pl]": "Status Serwerów",
+        "Version": "1.0",
+        "Website": "http://maciej.gierej.pl"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

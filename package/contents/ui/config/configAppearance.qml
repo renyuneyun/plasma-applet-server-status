@@ -1,48 +1,50 @@
-import QtQuick 2.1
-import QtQuick.Controls 1.2
-import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.1
-import org.kde.plasma.components 2.0 as PlasmaComponents
+import QtQuick
+import QtQuick.Controls as QQC2
+import QtQuick.Dialogs
+import QtQuick.Layouts
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.kcmutils as KCM
+import org.kde.kirigami as Kirigami
 
-Item {
+KCM.SimpleKCM {
 	id: configAppearance
-	Layout.fillWidth: true
-	
+
 	property alias cfg_fontSize: fontSize.value
-	property string cfg_iconOnline: plasmoid.configuration.iconOnline
-	property string cfg_iconOffline: plasmoid.configuration.iconOffline
-	
-	GridLayout {
-		columns: 2
-		
-		PlasmaComponents.Label {
+	property string cfg_iconOnline: Plasmoid.configuration.iconOnline
+	property string cfg_iconOffline: Plasmoid.configuration.iconOffline
+
+	Kirigami.FormLayout {
+		QQC2.Label {
 			text: i18n("Font size:")
 		}
-		
-		SpinBox {
+
+		QQC2.SpinBox {
 			id: fontSize
-			suffix: i18n(" pt")
-			minimumValue: 1
-			maximumValue: 128
+			textFromValue: function(value) {
+				return value + i18n(" pt")
+			}
+			valueFromText: function(text) {
+				return parseInt(text)
+			}
+			from: 1
+			to: 128
 		}
-		
-		
-		PlasmaComponents.Label {
+
+		QQC2.Label {
 			text: i18n("Online icon:")
 		}
-		
+
 		IconPicker {
 			currentIcon: cfg_iconOnline
 			defaultIcon: "security-high"
 			onIconChanged: cfg_iconOnline = iconName
 			enabled: true
 		}
-		
-		
-		PlasmaComponents.Label {
+
+		QQC2.Label {
 			text: i18n("Offline icon:")
 		}
-		
+
 		IconPicker {
 			currentIcon: cfg_iconOffline
 			defaultIcon: "security-low"
