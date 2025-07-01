@@ -1,16 +1,17 @@
 # Server Status Plasmoid
 
 ## About
-Applet for KDE Plasma 5 showing a status of the servers defined by user.
+Applet for KDE Plasma 6 showing a status of the servers defined by user.
 
-Written by Maciej Gierej - http://makg.eu
+Ported by renyuneyun (Rui Zhao) - https://me.ryey.icu
+- Largely with the help from Copilot
+
+Originally written by Maciej Gierej - http://makg.eu
 
 ## Installation
 ```
-plasmapkg2 -i package
+kpackagetool6 --type Plasma/Applet --install package
 ```
-
-Use additional `-g` flag to install plasmoid globally, for all users.
 
 ## Features
 - Add as many servers as you want
@@ -22,7 +23,7 @@ Use additional `-g` flag to install plasmoid globally, for all users.
 ## Custom command
 You can define your custom command which will be executed on each server update. The plasmoid interprets exit code 0 as the server being online. Any other exit code will result in offline status. You can use `%hostname%` string in the command definition to pass particular server's hostname as an argument or option.
 
-## Screenshots
+## Screenshots (not updated)
 ![Server Status Plasmoid](https://raw.githubusercontent.com/MakG10/plasma-applet-server-status/master/server-status-plasmoid.png)
 
 ![Server Status Plasmoid (Panel)](https://raw.githubusercontent.com/MakG10/plasma-applet-server-status/master/server-status-panel.png)
@@ -38,6 +39,9 @@ You can define your custom command which will be executed on each server update.
 Released under the GPLv3 license.
 
 ## Changelog
+
+### 2.0
+Initial working version for Plasma 6
 
 ### 1.0
 Initial release
