@@ -34,30 +34,27 @@ KCM.SimpleKCM {
 
 		QQC2.GroupBox {
 			id: notificationUpGroup
-			title: "When server goes online"
+			title: i18n("When server goes online")
 			Layout.fillWidth: true
 
 			Kirigami.FormLayout {
-				QQC2.Label {
-					text: i18n("Action:")
-				}
-
 				QQC2.ComboBox {
 					id: notifyUpAction
-					model: ["Nothing", "System notification", "Command"]
-					Layout.minimumWidth: Kirigami.Units.gridUnit * 20
+					Kirigami.FormData.label: i18n("Action:")
+					model: [i18n("Nothing"), i18n("System notification"), i18n("Command")]
+					Layout.fillWidth: true
 					onCurrentIndexChanged: {
 						updateData();
-
 						notifyUpCommand.visible = (currentIndex == 2)
 					}
 				}
 
 				QQC2.TextField {
 					id: notifyUpCommand
+					Kirigami.FormData.label: i18n("Command:")
 					Layout.fillWidth: true
 					visible: false
-					placeholderText: i18n("Command:")
+					placeholderText: i18n("Enter command...")
 					onTextChanged: updateData()
 				}
 			}
@@ -65,30 +62,27 @@ KCM.SimpleKCM {
 
 		QQC2.GroupBox {
 			id: notificationDownGroup
-			title: "When server goes offline"
+			title: i18n("When server goes offline")
 			Layout.fillWidth: true
 
 			Kirigami.FormLayout {
-				QQC2.Label {
-					text: i18n("Action:")
-				}
-
 				QQC2.ComboBox {
 					id: notifyDownAction
-					model: ["Nothing", "System notification", "Command"]
-					Layout.minimumWidth: Kirigami.Units.gridUnit * 20
+					Kirigami.FormData.label: i18n("Action:")
+					model: [i18n("Nothing"), i18n("System notification"), i18n("Command")]
+					Layout.fillWidth: true
 					onCurrentIndexChanged: {
 						updateData();
-
 						notifyDownCommand.visible = (currentIndex == 2)
 					}
 				}
 
 				QQC2.TextField {
 					id: notifyDownCommand
+					Kirigami.FormData.label: i18n("Command:")
 					Layout.fillWidth: true
 					visible: false
-					placeholderText: i18n("Command:")
+					placeholderText: i18n("Enter command...")
 					onTextChanged: updateData()
 				}
 			}

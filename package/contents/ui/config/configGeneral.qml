@@ -45,10 +45,24 @@ KCM.SimpleKCM {
 			ListView {
 				id: serversList
 				model: serversModel
+				currentIndex: -1
+				highlight: Rectangle {
+					color: Kirigami.Theme.highlightColor
+					opacity: 0.3
+					radius: Kirigami.Units.cornerRadius
+				}
+				highlightMoveDuration: 0
+				highlightMoveVelocity: -1
 
 				delegate: QQC2.ItemDelegate {
 					width: ListView.view.width
 					height: Kirigami.Units.gridUnit * 2
+
+					highlighted: ListView.isCurrentItem
+
+					onClicked: {
+						serversList.currentIndex = index
+					}
 
 					RowLayout {
 						anchors.fill: parent
@@ -121,8 +135,10 @@ KCM.SimpleKCM {
 				onClicked: {
 					if(serversList.currentIndex == -1) return;
 
-					serversModel.move(serversList.currentIndex, serversList.currentIndex - 1, 1);
-					serversList.currentIndex = serversList.currentIndex - 1;
+					var currentIdx = serversList.currentIndex;
+					serversModel.move(currentIdx, currentIdx - 1, 1);
+					serversList.currentIndex = currentIdx - 1;
+					cfg_servers = JSON.stringify(getServersArray());
 				}
 			}
 
@@ -135,8 +151,10 @@ KCM.SimpleKCM {
 				onClicked: {
 					if(serversList.currentIndex == -1) return;
 
-					serversModel.move(serversList.currentIndex, serversList.currentIndex + 1, 1);
-					serversList.currentIndex = serversList.currentIndex + 1;
+					var currentIdx = serversList.currentIndex;
+					serversModel.move(currentIdx, currentIdx + 1, 1);
+					serversList.currentIndex = currentIdx + 1;
+					cfg_servers = JSON.stringify(getServersArray());
 				}
 			}
 		}
@@ -148,6 +166,9 @@ KCM.SimpleKCM {
 		title: "Server"
 		modal: true
 		standardButtons: QQC2.Dialog.Save | QQC2.Dialog.Cancel
+
+		width: Math.max(Kirigami.Units.gridUnit * 30, implicitWidth)
+		height: Math.max(Kirigami.Units.gridUnit * 25, implicitHeight)
 
 		onAccepted: {
 			var itemObject = {
@@ -170,79 +191,72 @@ KCM.SimpleKCM {
 			cfg_servers = JSON.stringify(getServersArray());
 		}
 
-		ColumnLayout {
-			Kirigami.FormLayout {
-				QQC2.Label {
-					text: "Name:"
-				}
+		Kirigami.FormLayout {
+			anchors.fill: parent
+			anchors.margins: Kirigami.Units.largeSpacing
 
-				QQC2.TextField {
-					id: serverName
-					Layout.minimumWidth: Kirigami.Units.gridUnit * 20
-				}
+			QQC2.TextField {
+				id: serverName
+				Kirigami.FormData.label: i18n("Name:")
+				Layout.fillWidth: true
+			}
 
-				QQC2.Label {
-					text: "Host name:"
-				}
+			QQC2.TextField {
+				id: serverHostname
+				Kirigami.FormData.label: i18n("Host name:")
+				Layout.fillWidth: true
+			}
 
-				QQC2.TextField {
-					id: serverHostname
-					Layout.minimumWidth: Kirigami.Units.gridUnit * 20
+			QQC2.SpinBox {
+				id: serverRefreshRate
+				Kirigami.FormData.label: i18n("Refresh rate:")
+				textFromValue: function(value) {
+					return value + i18n(" seconds")
 				}
+				valueFromText: function(text) {
+					return parseInt(text)
+				}
+				from: 1
+				to: 3600
+			}
 
-				QQC2.Label {
-					text: i18n("Refresh rate:")
+			QQC2.ComboBox {
+				id: serverMethod
+				Kirigami.FormData.label: i18n("Check method:")
+				model: ["Ping", "PingV6", "HTTP 200 OK", "Command"]
+				Layout.fillWidth: true
+				onActivated: {
+					commandGroup.visible = (index == 3)
 				}
+			}
 
-				QQC2.SpinBox {
-					id: serverRefreshRate
-					textFromValue: function(value) {
-						return value + i18n(" seconds")
-					}
-					valueFromText: function(text) {
-						return parseInt(text)
-					}
-					from: 1
-					to: 3600
-				}
-
-				QQC2.Label {
-					text: i18n("Check method:")
-				}
-
-				QQC2.ComboBox {
-					id: serverMethod
-					model: ["Ping", "PingV6", "HTTP 200 OK", "Command"]
-					Layout.minimumWidth: Kirigami.Units.gridUnit * 15
-					onActivated: {
-						commandGroup.visible = (index == 3)
-					}
-				}
-
-				QQC2.CheckBox {
-					id: serverActive
-					text: i18n("Active")
-				}
+			QQC2.CheckBox {
+				id: serverActive
+				text: i18n("Active")
 			}
 
 			QQC2.GroupBox {
 				id: commandGroup
-				title: "Command"
+				title: i18n("Command")
 				visible: false
 				Layout.fillWidth: true
+				Layout.topMargin: Kirigami.Units.largeSpacing
 
 				ColumnLayout {
 					anchors.fill: parent
+					anchors.margins: Kirigami.Units.smallSpacing
 
 					QQC2.TextField {
 						id: serverCommand
 						Layout.fillWidth: true
+						placeholderText: i18n("Enter command...")
 					}
 
 					QQC2.Label {
 						Layout.fillWidth: true
 						wrapMode: Text.WordWrap
 						text: i18n("Use %hostname% to pass server's hostname as an argument or option to the executable.")
+						font.pointSize: Kirigami.Theme.smallFont.pointSize
 					}
 				}
 			}

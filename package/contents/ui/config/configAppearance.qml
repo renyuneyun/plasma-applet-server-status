@@ -14,12 +14,9 @@ KCM.SimpleKCM {
 	property string cfg_iconOffline: Plasmoid.configuration.iconOffline
 
 	Kirigami.FormLayout {
-		QQC2.Label {
-			text: i18n("Font size:")
-		}
-
 		QQC2.SpinBox {
 			id: fontSize
+			Kirigami.FormData.label: i18n("Font size:")
 			textFromValue: function(value) {
 				return value + i18n(" pt")
 			}
@@ -30,22 +27,16 @@ KCM.SimpleKCM {
 			to: 128
 		}
 
-		QQC2.Label {
-			text: i18n("Online icon:")
-		}
-
 		IconPicker {
+			Kirigami.FormData.label: i18n("Online icon:")
 			currentIcon: cfg_iconOnline
 			defaultIcon: "security-high"
 			onIconChanged: cfg_iconOnline = iconName
 			enabled: true
 		}
 
-		QQC2.Label {
-			text: i18n("Offline icon:")
-		}
-
 		IconPicker {
+			Kirigami.FormData.label: i18n("Offline icon:")
 			currentIcon: cfg_iconOffline
 			defaultIcon: "security-low"
 			onIconChanged: cfg_iconOffline = iconName
