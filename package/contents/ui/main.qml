@@ -22,6 +22,8 @@ PlasmoidItem {
 	width: 250
 	height: 300
 
+	Plasmoid.backgroundHints: PlasmaCore.Types.StandardBackground | PlasmaCore.Types.ConfigurableBackground
+
 // 	Plasmoid.preferredRepresentation: Plasmoid.compactRepresentation
 	toolTipTextFormat: Text.RichText
 
